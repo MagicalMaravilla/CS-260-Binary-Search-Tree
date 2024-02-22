@@ -1,0 +1,63 @@
+#include <iostream>
+
+struct Node {
+    int value;
+    Node* left;
+    Node* right;
+
+    Node(int val) : value(val), left(nullptr), right(nullptr) {}
+};
+
+class BinarySearchTree {
+private:
+    Node* root;
+
+    Node* addRecursive(Node* node, int value) {
+        if (node == nullptr) {
+            return new Node(value);
+        }
+        if (value < node->value) {
+            node->left = addRecursive(node->left, value);
+        } else if (value > node->value) {
+            node->right = addRecursive(node->right, value);
+        }
+        return node;
+    }
+
+    void inorderRecursive(Node* node) {
+        if (node != nullptr) {
+            inorderRecursive(node->left);
+            std::cout << node->value << " ";
+            inorderRecursive(node->right);
+        }
+    }
+
+public:
+    BinarySearchTree() : root(nullptr) {}
+
+    void add(int value) {
+        root = addRecursive(root, value);
+    }
+
+    void inorder() {
+        inorderRecursive(root);
+    }
+};
+
+int main() {
+    BinarySearchTree bst;
+
+    // Add values
+    bst.add(5);
+    bst.add(3);
+    bst.add(7);
+    bst.add(2);
+    bst.add(4);
+    bst.add(6);
+    bst.add(8);
+
+    // Perform in-order traversal to print values in ascending order
+    bst.inorder(); // Expected output: 2 3 4 5 6 7 8
+
+    return 0;
+}
