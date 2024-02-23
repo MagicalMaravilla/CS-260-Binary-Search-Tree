@@ -1,0 +1,190 @@
+#include <iostream>
+#include <queue> // Include for breadth-first traversal
+
+// Definition of the Node structure for the BST
+struct Node {
+    int value;      // Holds the value of the node
+    Node* left;     // Pointer to the left child node
+    Node* right;    // Pointer to the right child node
+
+    // Constructor to initialize a node with a value and null child pointers
+    Node(int val) : value(val), left(nullptr), right(nullptr) {}
+};
+
+// Definition of the BinarySearchTree class
+class BinarySearchTree {
+private:
+    Node* root; // Root node of the BST
+
+    // Recursive helper method for adding a value to the BST
+    Node* addRecursive(Node* node, int value) {
+        // Base case: If current node is null, create a new node with the value
+        if (node == nullptr) {
+            return new Node(value);
+        }
+        // If value is less than current node's value, recurse on left subtree
+        if (value < node->value) {
+            node->left = addRecursive(node->left, value);
+        } else if (value > node->value) { // If value is greater, recurse on right subtree
+            node->right = addRecursive(node->right, value);
+        }
+        // Return the (possibly unchanged) node pointer
+        return node;
+    }
+
+    // Recursive helper method for in-order traversal
+    void inorderRecursive(Node* node) {
+        if (node != nullptr) {
+            inorderRecursive(node->left); // Traverse left subtree
+            std::cout << node->value << " "; // Visit node
+            inorderRecursive(node->right); // Traverse right subtree
+        }
+    }
+
+    // Recursive helper method for pre-order traversal
+    void preorderRecursive(Node* node) {
+        if (node != nullptr) {
+            std::cout << node->value << " "; // Visit node
+            preorderRecursive(node->left); // Traverse left subtree
+            preorderRecursive(node->right); // Traverse right subtree
+        }
+    }
+
+    // Recursive helper method for post-order traversal
+    void postorderRecursive(Node* node) {
+        if (node != nullptr) {
+            postorderRecursive(node->left); // Traverse left subtree
+            postorderRecursive(node->right); // Traverse right subtree
+            std::cout << node->value << " "; // Visit node
+        }
+    }
+
+    // Recursive helper method for removing a value from the BST
+    Node* removeRecursive(Node* node, int value) {
+        if (node == nullptr) return nullptr; // Base case: node is null
+
+        // If value is less, recurse on left subtree
+        if (value < node->value) {
+            node->left = removeRecursive(node->left, value);
+        } else if (value > node->value) { // If value is greater, recurse on right subtree
+            node->right = removeRecursive(node->right, value);
+        } else {
+            // Node with value found: now remove it
+            if (node->left == nullptr) { // Node with only right child or no child
+                Node* temp = node->right;
+                delete node;
+                return temp;
+            } else if (node->right == nullptr) { // Node with only left child
+                Node* temp = node->left;
+                delete node;
+                return temp;
+            }
+            // Node with two children: Get the inorder successor (smallest in the right subtree)
+            Node* temp = findMinValueNode(node->right);
+            // Copy the inorder successor's value to this node
+            node->value = temp->value;
+            // Delete the inorder successor
+            node->right = removeRecursive(node->right, temp->value);
+        }
+        return node; // Return the (possibly changed) node pointer
+    }
+
+    // Helper method to find the node with the minimum value in a subtree
+    Node* findMinValueNode(Node* node) {
+        Node* current = node;
+        // Loop to find the leftmost leaf
+        while (current && current->left != nullptr) {
+            current = current->left;
+        }
+        return current; // The leftmost node is the minimum
+    }
+
+public:
+    // Constructor initializes the root as nullptr
+    BinarySearchTree() : root(nullptr) {}
+
+    // Public method to add a value to the BST
+    void add(int value) {
+        root = addRecursive(root, value);
+    }
+
+    // Public method for in-order traversal
+    void inorder() {
+        std::cout << "In-order: ";
+        inorderRecursive(root);
+        std::cout << std::endl;
+    }
+
+    // Public method for pre-order traversal
+    void preorder() {
+        std::cout << "Pre-order: ";
+        preorderRecursive(root);
+        std::cout << std::endl;
+    }
+
+    // Public method for post-order traversal
+    void postorder() {
+        std::cout << "Post-order: ";
+        postorderRecursive(root);
+        std::cout << std::endl;
+    }
+
+    // Public method for level-order (breadth-first) traversal
+    void levelOrder() {
+        if (!root) return; // If tree is empty, return
+
+        std::cout << "Level-order: ";
+        std::queue<Node*> q; // Queue to hold nodes to be visited
+        q.push(root); // Start with the root
+
+        // Loop until queue is empty
+        while (!q.empty()) {
+            Node* node = q.front(); // Get the next node from the queue
+            q.pop(); // Remove the node from the queue
+
+            std::cout << node->value << " "; // Visit the node
+
+            // If left child exists, add it to the queue
+            if (node->left != nullptr) q.push(node->left);
+            // If right child exists, add it to the queue
+            if (node->right != nullptr) q.push(node->right);
+        }
+        std::cout << std::endl;
+    }
+
+    // Public method to remove a value from the BST
+    void remove(int value) {
+        root = removeRecursive(root, value);
+    }
+};
+
+int main() {
+    BinarySearchTree bst;
+
+    // Adding values
+    bst.add(5);
+    bst.add(3);
+    bst.add(7);
+    bst.add(2);
+    bst.add(4);
+    bst.add(6);
+    bst.add(8);
+
+    // Demonstrating various traversals
+    bst.inorder();   // Should print: 2 3 4 5 6 7 8
+    bst.preorder();  // Should print: 5 3 2 4 7 6 8
+    bst.postorder(); // Should print: 2 4 3 6 8 7 5
+    bst.levelOrder(); // Should print: 5 3 7 2 4 6 8
+
+    // Removing values and testing inorder traversal after each removal
+    bst.remove(3);
+    bst.inorder();   // Should print: 2 4 5 6 7 8
+
+    bst.remove(5);
+    bst.inorder();   // Should print: 2 4 6 7 8
+
+    bst.remove(8);
+    bst.inorder();   // Should print: 2 4 6 7
+
+    return 0;
+}
